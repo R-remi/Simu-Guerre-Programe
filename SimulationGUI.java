@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
-
+//🦖🦖🦖
 
 public class SimulationGUI extends JFrame {
     private static final int TAILLE_GRILLE = 40;
