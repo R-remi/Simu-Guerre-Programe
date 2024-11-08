@@ -8,7 +8,7 @@ import java.util.List;
 import javax.swing.Timer;
 
 public class Imperamem extends JFrame {
-    private static int tailleTableau = 5;
+    private static int tailleTableau = 7;
     private static final int TAILLE_MEMOIRE = tailleTableau*tailleTableau;
     private ImperaInstruction[] memoire;
     private int[] positionsCourantes;

@@ -1,28 +1,29 @@
 package test;
-// test.GrilleMemoire.java
+
 import javax.swing.*;
 import java.awt.*;
 
 public class GrilleMemoire extends JPanel {
-    private static final int TAILLE_CELLULE = 60;
+    private static final int TAILLE_CELLULE = 40;
+    private static final int COLONNES = 7; // Nombre de colonnes pour la grille
     private ImperaInstruction[] memoire;
     private int[] couleurs;
     private int[] positionsCourantes;
 
     public GrilleMemoire(int taille) {
-        setPreferredSize(new Dimension(taille * TAILLE_CELLULE, TAILLE_CELLULE));
+        setPreferredSize(new Dimension(COLONNES * TAILLE_CELLULE, (taille / COLONNES + 1) * TAILLE_CELLULE));
         setBackground(Color.WHITE);
     }
 
-public void setDonnees(ImperaInstruction[] memoire, int[] couleurs, int[] positionsCourantes) {
-    if (memoire == null || couleurs == null || positionsCourantes == null) {
-        throw new IllegalArgumentException("Arguments cannot be null");
+    public void setDonnees(ImperaInstruction[] memoire, int[] couleurs, int[] positionsCourantes) {
+        if (memoire == null || couleurs == null || positionsCourantes == null) {
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        this.memoire = memoire;
+        this.couleurs = couleurs;
+        this.positionsCourantes = positionsCourantes;
+        repaint();
     }
-    this.memoire = memoire;
-    this.couleurs = couleurs;
-    this.positionsCourantes = positionsCourantes;
-    repaint();
-}
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -34,8 +35,8 @@ public void setDonnees(ImperaInstruction[] memoire, int[] couleurs, int[] positi
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         for (int i = 0; i < memoire.length; i++) {
-            int x = i * TAILLE_CELLULE;
-            int y = 0;
+            int x = (i % COLONNES) * TAILLE_CELLULE;
+            int y = (i / COLONNES) * TAILLE_CELLULE;
 
             // Couleur de fond selon le programme
             Color[] couleursProgamme = {
