@@ -5,9 +5,11 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.Timer;
 
 public class Imperamem extends JFrame {
-    private static final int TAILLE_MEMOIRE = 40;
+    private static int tailleTableau = 5;
+    private static final int TAILLE_MEMOIRE = tailleTableau*tailleTableau;
     private ImperaInstruction[] memoire;
     private int[] positionsCourantes;
     private int[] couleurs;
@@ -74,12 +76,15 @@ public class Imperamem extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void initialiserMemoire() {
-        for (int i = 0; i < TAILLE_MEMOIRE; i++) {
-            memoire[i] = new ImperaInstruction("DAT", "#0", "#0");
-        }
-        mettreAJourAffichage();
+private void initialiserMemoire() {
+    memoire = new ImperaInstruction[TAILLE_MEMOIRE];
+    couleurs = new int[TAILLE_MEMOIRE];
+    positionsCourantes = new int[TAILLE_MEMOIRE];
+    for (int i = 0; i < TAILLE_MEMOIRE; i++) {
+        memoire[i] = new ImperaInstruction("DAT", "#0", "#0");
     }
+    mettreAJourAffichage();
+}
 
     public void lireProgramme(String fichier) {
         List<ImperaInstruction> programme = new ArrayList<>();
@@ -135,4 +140,126 @@ public class Imperamem extends JFrame {
 
             case "MOV":
                 int source = pos + parseParametre(inst.getParametreA());
-                int dest = pos
+                int dest = pos + parseParametre(inst.getParametreB());
+                if (estValide(source) && estValide(dest)) {
+                    memoire[dest] = new ImperaInstruction(
+                            memoire[source].getCommande(),
+                            memoire[source].getParametreA(),
+                            memoire[source].getParametreB()
+                    );
+                    positionsCourantes[programmeIndex] = (pos + 1) % TAILLE_MEMOIRE;
+                    log("MOV: Programme " + (programmeIndex + 1) + " copie de " + source + " vers " + dest);
+                }
+                break;
+
+            case "ADD":
+                traiterAdd(programmeIndex, pos, inst);
+                break;
+
+            case "JMP":
+                int saut = parseParametre(inst.getParametreA());
+                int nouvelle = (pos + saut) % TAILLE_MEMOIRE;
+                positionsCourantes[programmeIndex] = nouvelle;
+                log("JMP: Programme " + (programmeIndex + 1) + " saute à " + nouvelle);
+                break;
+        }
+        mettreAJourAffichage();
+    }
+
+    private void traiterAdd(int programmeIndex, int pos, ImperaInstruction inst) {
+        try {
+            int valeurA;
+            if (inst.getParametreA().startsWith("#")) {
+                valeurA = Integer.parseInt(inst.getParametreA().substring(1));
+            } else {
+                int adresseA = pos + parseParametre(inst.getParametreA());
+                if (!estValide(adresseA)) return;
+                valeurA = Integer.parseInt(memoire[adresseA].getParametreA().substring(1));
+            }
+
+            int adresseB = pos + parseParametre(inst.getParametreB());
+            if (!estValide(adresseB)) return;
+
+            ImperaInstruction destInst = memoire[adresseB];
+            int valeurB = Integer.parseInt(destInst.getParametreB().substring(1));
+            destInst.setParametreB("#" + (valeurA + valeurB));
+
+            positionsCourantes[programmeIndex] = (pos + 1) % TAILLE_MEMOIRE;
+            log("ADD: Programme " + (programmeIndex + 1) + " ajoute " + valeurA + " à la position " + adresseB);
+        } catch (NumberFormatException e) {
+            log("Erreur dans ADD: format de nombre invalide");
+        }
+    }
+
+    private int parseParametre(String param) {
+        return Integer.parseInt(param.startsWith("#") ? param.substring(1) : param);
+    }
+
+    private boolean estValide(int position) {
+        return position >= 0 && position < TAILLE_MEMOIRE;
+    }
+
+    private void executerTour() {
+        for (int i = 0; i < positionsCourantes.length; i++) {
+            if (positionsCourantes[i] >= 0) {
+                executerInstruction(i);
+            }
+        }
+
+        // Vérifier si la partie est terminée
+        int programmesActifs = 0;
+        int dernierProgrammeActif = -1;
+        for (int i = 0; i < positionsCourantes.length; i++) {
+            if (positionsCourantes[i] >= 0) {
+                programmesActifs++;
+                dernierProgrammeActif = i;
+            }
+        }
+
+        if (programmesActifs <= 1) {
+            if (dernierProgrammeActif >= 0) {
+                log("Programme " + (dernierProgrammeActif + 1) + " a gagné!");
+            } else {
+                log("Match nul - tous les programmes sont morts");
+            }
+            arreterExecution();
+        }
+    }
+
+    private void chargerProgramme() {
+        JFileChooser fileChooser = new JFileChooser();
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            lireProgramme(fileChooser.getSelectedFile().getPath());
+            copierProgrammesDansMemoire();
+        }
+    }
+
+    private void demarrerExecution() {
+        enExecution = true;
+        btnCharger.setEnabled(false);
+        btnPas.setEnabled(false);
+        btnDemarrer.setEnabled(false);
+        btnArreter.setEnabled(true);
+        timer.start();
+        log("Exécution automatique démarrée");
+    }
+
+    private void arreterExecution() {
+        enExecution = false;
+        timer.stop();
+        btnCharger.setEnabled(true);
+        btnPas.setEnabled(true);
+        btnDemarrer.setEnabled(true);
+        btnArreter.setEnabled(false);
+        log("Exécution arrêtée");
+    }
+
+    private void mettreAJourAffichage() {
+        grilleMemoire.setDonnees(memoire, couleurs, positionsCourantes);
+    }
+
+    private void log(String message) {
+        console.append(message + "\n");
+        console.setCaretPosition(console.getDocument().getLength());
+    }
+}

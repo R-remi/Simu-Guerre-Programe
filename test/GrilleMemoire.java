@@ -14,13 +14,15 @@ public class GrilleMemoire extends JPanel {
         setBackground(Color.WHITE);
     }
 
-
-    public void setDonnees(ImperaInstruction[] memoire, int[] couleurs, int[] positionsCourantes) {
-        this.memoire = memoire;
-        this.couleurs = couleurs;
-        this.positionsCourantes = positionsCourantes;
-        repaint();
+public void setDonnees(ImperaInstruction[] memoire, int[] couleurs, int[] positionsCourantes) {
+    if (memoire == null || couleurs == null || positionsCourantes == null) {
+        throw new IllegalArgumentException("Arguments cannot be null");
     }
+    this.memoire = memoire;
+    this.couleurs = couleurs;
+    this.positionsCourantes = positionsCourantes;
+    repaint();
+}
 
     @Override
     protected void paintComponent(Graphics g) {
