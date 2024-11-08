@@ -5,6 +5,7 @@ public class Imperamem {
     private ImperaInstruction[][] grille;  // Grille de mémoire 40x40
     private int taille = 40;
 
+
     // Constructeur pour initialiser la grille
     public Imperamem() {
         grille = new ImperaInstruction[taille][taille];

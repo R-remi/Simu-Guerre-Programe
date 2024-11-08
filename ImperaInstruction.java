@@ -3,6 +3,7 @@ public class ImperaInstruction {
     private String parametreA;
     private String parametreB;
 
+
     // Constructeur pour initialiser les attributs
     public ImperaInstruction(String commande, String parametreA, String parametreB) {
         this.commande = commande;
